@@ -4,6 +4,7 @@ use alloc::boxed::Box;
 use core::sync::atomic::{AtomicU64, Ordering};
 
 /// Monotonically-increasing task-ID generator.
+#[allow(dead_code)]
 static NEXT_TID: AtomicU64 = AtomicU64::new(1);
 
 /// Unique task identifier.
@@ -11,6 +12,7 @@ static NEXT_TID: AtomicU64 = AtomicU64::new(1);
 pub struct TaskId(u64);
 
 impl TaskId {
+    #[allow(dead_code)]
     fn next() -> Self {
         TaskId(NEXT_TID.fetch_add(1, Ordering::Relaxed))
     }
@@ -24,8 +26,10 @@ pub enum TaskState {
     /// Currently executing on the CPU.
     Running,
     /// Blocked waiting for an IPC message or I/O.
+    #[allow(dead_code)]
     Blocked,
     /// Terminated; resources can be reclaimed.
+    #[allow(dead_code)]
     Zombie,
 }
 
@@ -49,8 +53,10 @@ pub struct CpuContext {
 pub struct Task {
     pub id: TaskId,
     pub state: TaskState,
+    #[allow(dead_code)]
     pub context: CpuContext,
     /// Kernel stack allocation — kept alive for the task's lifetime.
+    #[allow(dead_code)]
     pub stack: Box<[u8; STACK_SIZE]>,
     /// Human-readable name for debugging.
     pub name: &'static str,
@@ -65,6 +71,7 @@ pub const DEFAULT_TIMESLICE: u32 = 10;
 
 impl Task {
     /// Allocate a new kernel task that will begin executing `entry`.
+    #[allow(dead_code)]
     pub fn new(name: &'static str, entry: fn() -> !) -> Self {
         let mut stack = Box::new([0u8; STACK_SIZE]);
 

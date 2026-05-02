@@ -7,6 +7,7 @@
 //! This is deliberately minimal: it demonstrates the micro-kernel IPC
 //! primitive that higher-level syscalls (including Darwin mach_msg) will be
 //! built on top of.
+#![allow(dead_code)]
 
 use alloc::{
     collections::VecDeque,

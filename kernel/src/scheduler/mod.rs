@@ -38,6 +38,7 @@ impl Scheduler {
     }
 
     /// Enqueue a new task.
+    #[allow(dead_code)]
     pub fn spawn(&mut self, task: Task) {
         crate::serial_println!("[sched] spawning task {:?}", task.name);
         self.ready_queue.push_back(task);
@@ -89,6 +90,7 @@ impl Scheduler {
     }
 
     /// Block the task identified by `id`, moving it to `Blocked` state.
+    #[allow(dead_code)]
     pub fn block_current(&mut self) {
         if let Some(idx) = self.current {
             if let Some(task) = self.ready_queue.get_mut(idx) {
@@ -98,6 +100,7 @@ impl Scheduler {
     }
 
     /// Unblock a task by its task ID.
+    #[allow(dead_code)]
     pub fn unblock(&mut self, id: task::TaskId) {
         for task in self.ready_queue.iter_mut() {
             if task.id == id && task.state == TaskState::Blocked {
@@ -125,6 +128,7 @@ pub fn tick() {
 }
 
 /// Spawn a new kernel task.
+#[allow(dead_code)]
 pub fn spawn(task: Task) {
     SCHEDULER.lock().spawn(task);
 }
