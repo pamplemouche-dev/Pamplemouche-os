@@ -1,0 +1,83 @@
+name: Build ISO
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  BOOTIMAGE: target/x86_64-pamplemouche/debug/bootimage-pamplemouche-kernel.bin
+
+jobs:
+  build-iso:
+    name: Build bootable ISO
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # required to upload assets to GitHub Releases
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # rust-toolchain.toml already pins nightly + rust-src + llvm-tools-preview
+      - name: Set up Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Cache Cargo registry, build artifacts & installed binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            ~/.cargo/bin/bootimage
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Install bootimage
+        run: '[ -f ~/.cargo/bin/bootimage ] || cargo install bootimage'
+
+      - name: Install xorriso
+        run: sudo apt-get install -y xorriso
+
+      - name: Build kernel and create bootable disk image
+        run: |
+          cd kernel
+          cargo bootimage \
+            -Z build-std=core,compiler_builtins,alloc \
+            -Z build-std-features=compiler-builtins-mem
+
+      - name: Package ISO
+        run: |
+          if [ ! -f "$BOOTIMAGE" ]; then
+            echo "ERROR: bootimage not found at $BOOTIMAGE" >&2
+            exit 1
+          fi
+          mkdir -p isofiles/boot
+          cp "$BOOTIMAGE" isofiles/boot/pamplemouche-kernel.bin
+          xorriso -as mkisofs \
+            -b boot/pamplemouche-kernel.bin \
+            -no-emul-boot \
+            -boot-load-size 4 \
+            -boot-info-table \
+            --protective-msdos-label \
+            -o pamplemouche-os.iso \
+            isofiles/
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pamplemouche-os-iso
+          path: pamplemouche-os.iso
+          if-no-files-found: error
+
+      # Attach the ISO to a GitHub Release when a version tag is pushed
+      - name: Upload ISO to Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pamplemouche-os.iso
