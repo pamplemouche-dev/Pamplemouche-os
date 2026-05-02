@@ -21,6 +21,7 @@ pub unsafe fn init(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static>
 }
 
 /// Map a single 4 KiB page to the given physical frame with the supplied flags.
+#[allow(dead_code)]
 pub fn map_page(
     page: Page<Size4KiB>,
     frame: PhysFrame,
@@ -43,6 +44,7 @@ pub fn map_page(
 }
 
 /// Translate a virtual address to its mapped physical address (if any).
+#[allow(dead_code)]
 pub fn translate(addr: VirtAddr, mapper: &OffsetPageTable) -> Option<PhysAddr> {
     use x86_64::structures::paging::mapper::TranslateResult;
     use x86_64::structures::paging::Translate;
