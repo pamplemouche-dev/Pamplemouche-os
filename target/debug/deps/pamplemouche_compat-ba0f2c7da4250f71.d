@@ -9,5 +9,5 @@ compat/src/macho/mod.rs:
 compat/src/macho/loader.rs:
 Cargo.toml:
 
-# env-dep:CLIPPY_ARGS=-W__CLIPPY_HACKERY__clippy::all__CLIPPY_HACKERY__
+# env-dep:CLIPPY_ARGS=-D__CLIPPY_HACKERY__warnings__CLIPPY_HACKERY__
 # env-dep:CLIPPY_CONF_DIR

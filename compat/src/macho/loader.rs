@@ -266,7 +266,7 @@ impl<'a> LoadCommandIter<'a> {
         let hdr: LoadCommandHeader =
             unsafe { read_struct(self.bytes, self.offset)? };
 
-        if hdr.cmdsize < 8 || hdr.cmdsize % 4 != 0 {
+        if hdr.cmdsize < 8 || !hdr.cmdsize.is_multiple_of(4) {
             return Err(ParseError::InvalidCmdSize);
         }
         if self.offset + hdr.cmdsize as usize > self.bytes.len() {

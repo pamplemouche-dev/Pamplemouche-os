@@ -80,7 +80,7 @@ impl Task {
         let stack_top = stack.as_mut_ptr() as usize + STACK_SIZE;
         let rsp = (stack_top - core::mem::size_of::<u64>()) as u64;
         unsafe {
-            *(rsp as *mut u64) = entry as u64;
+            *(rsp as *mut usize) = entry as usize;
         }
 
         Task {
