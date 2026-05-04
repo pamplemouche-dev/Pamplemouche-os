@@ -49,7 +49,8 @@ jobs:
           cd kernel
           cargo bootimage \
             -Z build-std=core,compiler_builtins,alloc \
-            -Z build-std-features=compiler-builtins-mem
+            -Z build-std-features=compiler-builtins-mem \
+            -Z json-target-spec
 
       - name: Package ISO
         run: |
