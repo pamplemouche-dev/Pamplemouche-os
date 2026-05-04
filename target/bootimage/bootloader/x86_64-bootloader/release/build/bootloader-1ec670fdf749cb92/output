@@ -1,0 +1,7 @@
+cargo:rerun-if-changed=/home/runner/work/Pamplemouche-os/Pamplemouche-os/kernel/Cargo.toml
+cargo:rustc-link-search=native=/home/runner/work/Pamplemouche-os/Pamplemouche-os/target/bootimage/bootloader/x86_64-bootloader/release/build/bootloader-1ec670fdf749cb92/out
+cargo:rustc-link-lib=static=kernel_bin-pamplemouche-kernel
+cargo:rerun-if-env-changed=KERNEL
+cargo:rerun-if-env-changed=KERNEL_MANIFEST
+cargo:rerun-if-changed=/home/runner/work/Pamplemouche-os/Pamplemouche-os/target/x86_64-pamplemouche/debug/pamplemouche-kernel
+cargo:rerun-if-changed=build.rs
