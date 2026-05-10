@@ -17,7 +17,11 @@ if [ -x /usr/local/bin/openbox-session ]; then
   exec /usr/local/bin/openbox-session
 fi
 
-exec xterm
+if command -v xterm >/dev/null 2>&1; then
+  exec xterm
+fi
+
+exec /bin/sh
 SESSION
 
 chmod 0755 "$TARGET_ROOT/usr/local/bin/start-pamplemouche-session"

@@ -26,6 +26,9 @@ fi
 echo "==> Installing package set"
 while IFS= read -r pkg || [ -n "$pkg" ]; do
   [ -z "$pkg" ] && continue
+  if pkg info -e "$pkg"; then
+    continue
+  fi
   pkg install -y "$pkg" || {
     echo "Failed to install package: $pkg" >&2
     exit 1
