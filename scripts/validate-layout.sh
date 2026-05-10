@@ -14,10 +14,12 @@ distribution/config/usr/local/etc/lightdm.conf
 distribution/ui/openbox/autostart.sh
 distribution/ui/tint2/tint2rc
 distribution/ui/skel/.xinitrc
+scripts/common.sh
 scripts/build-freebsd-image.sh
 scripts/configure-ui.sh
 scripts/package-artifacts.sh
 scripts/smoke-test-artifacts.sh
+tests/verify-ui-profile.sh
 "
 
 for relpath in $required_files; do
@@ -28,12 +30,12 @@ for relpath in $required_files; do
   fi
 done
 
-for script in build-freebsd-image.sh configure-ui.sh package-artifacts.sh smoke-test-artifacts.sh validate-layout.sh; do
-  if [ ! -x "$REPO_ROOT/scripts/$script" ]; then
-    echo "Script is not executable: scripts/$script" >&2
+for script in "$REPO_ROOT"/scripts/*.sh "$REPO_ROOT"/tests/*.sh; do
+  if [ ! -x "$script" ]; then
+    echo "Script is not executable: ${script#"$REPO_ROOT/"}" >&2
     exit 1
   fi
-  sh -n "$REPO_ROOT/scripts/$script"
+  sh -n "$script"
 done
 
 echo "Layout validation passed."

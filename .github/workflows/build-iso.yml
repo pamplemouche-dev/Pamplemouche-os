@@ -45,7 +45,6 @@ jobs:
             pkg update
             pkg install -y xorriso e2fsprogs
             cd "${{ github.workspace }}"
-            chmod +x scripts/*.sh tests/*.sh distribution/ui/openbox/autostart.sh
             TAG="${GITHUB_REF_NAME:-ci}" make build
 
       - name: Upload build artifacts

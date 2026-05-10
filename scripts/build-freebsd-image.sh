@@ -7,6 +7,8 @@ ARTIFACT_DIR="${ARTIFACT_DIR:-$REPO_ROOT/artifacts}"
 ROOTFS_DIR="$ARTIFACT_DIR/rootfs"
 RELEASE_DIR="$ARTIFACT_DIR/release"
 
+. "$REPO_ROOT/scripts/common.sh"
+
 mkdir -p "$ROOTFS_DIR" "$RELEASE_DIR"
 
 if [ "$(uname -s)" != "FreeBSD" ]; then
@@ -24,7 +26,10 @@ fi
 echo "==> Installing package set"
 while IFS= read -r pkg || [ -n "$pkg" ]; do
   [ -z "$pkg" ] && continue
-  pkg install -y "$pkg"
+  pkg install -y "$pkg" || {
+    echo "Failed to install package: $pkg" >&2
+    exit 1
+  }
 done < "$REPO_ROOT/distribution/packages/base.txt"
 
 echo "==> Staging distribution rootfs"
@@ -38,10 +43,10 @@ cp "$REPO_ROOT/distribution/config/usr/local/etc/lightdm.conf" "$ROOTFS_DIR/usr/
 TARGET_ROOT="$ROOTFS_DIR" REPO_ROOT="$REPO_ROOT" "$REPO_ROOT/scripts/configure-ui.sh"
 
 echo "==> Building image files"
-ROOTFS_IMAGE="$RELEASE_DIR/pamplemouche-rootfs-${TAG}.ufs"
-IMG="$ARTIFACT_DIR/pamplemouche-os-${TAG}.img"
-ISO="$ARTIFACT_DIR/pamplemouche-os-${TAG}.iso"
-SUM="$ARTIFACT_DIR/pamplemouche-os-${TAG}.sha256"
+ROOTFS_IMAGE="$RELEASE_DIR/${ARTIFACT_PREFIX}-rootfs-${TAG}.ufs"
+IMG="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${TAG}.img"
+ISO="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${TAG}.iso"
+SUM="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${TAG}.sha256"
 rm -f "$ROOTFS_IMAGE" "$IMG" "$ISO" "$SUM"
 
 makefs -t ffs -s 2g "$ROOTFS_IMAGE" "$ROOTFS_DIR"
@@ -49,6 +54,7 @@ mkimg -s gpt -p freebsd-ufs:="$ROOTFS_IMAGE" -o "$IMG"
 makefs -t cd9660 -o rockridge "$ISO" "$ROOTFS_DIR"
 
 echo "==> Writing checksums"
+TAB="$(printf '\t')"
 for file in "$IMG" "$ISO"; do
-  sha256 -q "$file" | awk -v f="$(basename "$file")" '{print $1 "  " f}' >> "$SUM"
+  printf '%s%s%s\n' "$(sha256 -q "$file")" "$TAB" "$(basename "$file")" >> "$SUM"
 done
