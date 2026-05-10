@@ -1,0 +1,5 @@
+# macOS-like top bar setup
+panel_position = top center horizontal
+panel_size = 100% 30
+panel_background_id = 1
+background_color = #1f1f24 100

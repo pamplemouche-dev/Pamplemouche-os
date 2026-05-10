@@ -1,0 +1,8 @@
+artifacts/*.iso
+artifacts/*.img
+artifacts/*.sha256
+artifacts/*-artifacts.tar.gz
+artifacts/rootfs
+artifacts/release
+*.log
+*.tmp

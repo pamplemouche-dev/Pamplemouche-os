@@ -1,0 +1,3 @@
+distribution/ui/openbox/autostart.sh
+distribution/ui/tint2/tint2rc
+distribution/config/usr/local/etc/lightdm.conf

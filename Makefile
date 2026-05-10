@@ -1,49 +1,28 @@
-# Pamplemouche-OS build system
-#
-# Targets:
-#   make build     – cross-compile the kernel (default)
-#   make run       – build and launch in QEMU
-#   make test      – run unit tests for the compat crate (host)
-#   make clean     – remove build artefacts
+SHELL := /bin/sh
 
-CARGO        ?= cargo
-QEMU         ?= qemu-system-x86_64
-KERNEL_BIN    = target/x86_64-pamplemouche/debug/pamplemouche-kernel
-BOOTIMAGE     = target/x86_64-pamplemouche/debug/bootimage-pamplemouche-kernel.bin
+ARTIFACT_DIR ?= artifacts
+TAG ?= dev
 
-.PHONY: all build run test clean
+.PHONY: all validate build package test smoke clean
 
-all: build
+all: validate
 
-## ── Build ──────────────────────────────────────────────────────────────────
+validate:
+	@scripts/validate-layout.sh
 
-build:
-	@echo "==> Building kernel (x86_64-pamplemouche)"
-	cd kernel && $(CARGO) build -Z build-std=core,compiler_builtins,alloc \
-	    -Z build-std-features=compiler-builtins-mem
-	@echo "==> Building compat library (host)"
-	$(CARGO) build -p pamplemouche-compat
+build: validate
+	@ARTIFACT_DIR="$(ARTIFACT_DIR)" scripts/build-freebsd-image.sh "$(TAG)"
 
-## ── Run in QEMU ─────────────────────────────────────────────────────────────
+package:
+	@ARTIFACT_DIR="$(ARTIFACT_DIR)" scripts/package-artifacts.sh "$(TAG)"
 
-run: build
-	@echo "==> Creating bootable image"
-	cd kernel && $(CARGO) bootimage
-	@echo "==> Launching QEMU"
-	$(QEMU) \
-	    -drive format=raw,file=$(BOOTIMAGE) \
-	    -serial stdio \
-	    -display none \
-	    -m 256M \
-	    -no-reboot
+test: validate
+	@tests/verify-ui-profile.sh
 
-## ── Tests ────────────────────────────────────────────────────────────────────
-
-test:
-	@echo "==> Running compat unit tests (host)"
-	$(CARGO) test -p pamplemouche-compat
-
-## ── Clean ────────────────────────────────────────────────────────────────────
+smoke:
+	@ARTIFACT_DIR="$(ARTIFACT_DIR)" scripts/smoke-test-artifacts.sh
 
 clean:
-	$(CARGO) clean
+	rm -rf "$(ARTIFACT_DIR)/rootfs" "$(ARTIFACT_DIR)/release" \
+	       "$(ARTIFACT_DIR)"/*.iso "$(ARTIFACT_DIR)"/*.img "$(ARTIFACT_DIR)"/*.sha256 \
+	       "$(ARTIFACT_DIR)"/*-artifacts.tar.gz

@@ -1,7 +1,0 @@
-[build]
-target = "x86_64-pamplemouche.json"
-
-[unstable]
-build-std = ["core", "compiler_builtins", "alloc"]
-build-std-features = ["compiler-builtins-mem"]
-json-target-spec = true
