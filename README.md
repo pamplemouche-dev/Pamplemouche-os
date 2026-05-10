@@ -1,113 +1,75 @@
-# Pamplemouche-OS
+# Pamplemouche-OS (FreeBSD Edition)
 
-Un système d'exploitation souverain "from scratch" — noyau micro-kernel x86-64 en Rust avec couche de compatibilité Darwin/macOS.
+Pamplemouche-OS est désormais une distribution personnalisée basée sur FreeBSD avec une expérience graphique inspirée de macOS (100% composants open source).
 
----
+## Périmètre
 
-## Architecture
+- Le noyau micro-kernel Rust historique est abandonné dans cette branche.
+- La cible est une image FreeBSD bootable (`.img` + `.iso`) avec environnement desktop "macOS-like".
+- Aucun composant propriétaire Apple/macOS n'est inclus.
 
-```
-Pamplemouche-OS/
-├── kernel/          # Micro-noyau (no_std, x86-64)
-│   └── src/
-│       ├── arch/x86_64/
-│       │   ├── gdt.rs          GDT + TSS
-│       │   └── interrupts.rs   IDT + PIC 8259 (timer, clavier)
-│       ├── memory/
-│       │   ├── frame_allocator.rs  Allocateur de frames physiques
-│       │   ├── paging.rs           Gestion des tables de pages
-│       │   └── allocator.rs        Tas kernel (linked-list)
-│       ├── scheduler/
-│       │   ├── mod.rs          Ordonnanceur préemptif round-robin
-│       │   └── task.rs         Descripteur de tâche + contexte CPU
-│       ├── ipc/
-│       │   └── mod.rs          IPC par passage de messages (ports Mach)
-│       ├── vga.rs              Driver console VGA 80×25
-│       └── serial.rs           UART 16550 (debug)
-└── compat/          # Couche de compatibilité Darwin (no_std)
-    └── src/
-        ├── macho/
-        │   └── loader.rs       Parseur Mach-O 64 bits (zero-copy)
-        └── darwin/
-            └── syscalls.rs     Table + dispatch des appels système Darwin/XNU
-```
+## Arborescence principale
 
-## Composants clés
-
-### Micro-noyau (`kernel`)
-
-| Module | Rôle |
-|--------|------|
-| `arch/x86_64/gdt` | Table de descripteurs globale, segments noyau/utilisateur, TSS |
-| `arch/x86_64/interrupts` | IDT — exceptions CPU + IRQ matérielles (PIC 8259) |
-| `memory/frame_allocator` | Allocateur de frames 4 Kio depuis la memory-map du bootloader |
-| `memory/paging` | Mapping/unmapping de pages virtuelles via `OffsetPageTable` |
-| `memory/allocator` | Tas noyau de 1 Mio (extensible) avec `linked_list_allocator` |
-| `scheduler` | Ordonnanceur préemptif round-robin déclenché par IRQ0 (timer) |
-| `ipc` | Ports de type Mach — envoi/réception de messages entre tâches |
-
-### Couche de compatibilité (`compat`)
-
-| Module | Rôle |
-|--------|------|
-| `macho/loader` | Lecture zero-copy des en-têtes, load commands et segments Mach-O 64 |
-| `darwin/syscalls` | Table complète des syscalls BSD Darwin + dispatcher `darwin_syscall()` |
-
----
+- `/freebsd/release`: paramètres de build FreeBSD release.
+- `/distribution/packages`: manifeste des paquets installés.
+- `/distribution/config`: configuration système (rc, loader, sysctl, lightdm).
+- `/distribution/ui`: profil UI (Openbox + Tint2 + Plank + Rofi).
+- `/scripts`: build image, post-install UI, packaging, validation.
 
 ## Prérequis
 
-| Outil | Version minimale |
-|-------|-----------------|
-| Rust nightly | ≥ 1.97-nightly |
-| QEMU | ≥ 8.x |
-| `bootimage` | `cargo install bootimage` |
+### Local (Linux/macOS)
+
+- `make`
+- `sh`
+
+> Le build bootable complet nécessite un hôte FreeBSD. Sous Linux/macOS, exécutez uniquement la validation du layout.
+
+### Build image complet (FreeBSD)
+
+- FreeBSD 14.1+
+- Arbre des sources installé (`/usr/src/release`)
+- Outils: `mkimg`, `makefs`, `pkg`
+
+## Commandes
 
 ```sh
-rustup toolchain install nightly
-rustup component add rust-src llvm-tools-preview
-cargo install bootimage
-```
+# Vérifie la structure et les scripts
+make validate
 
-## Compilation
+# Construit les images bootables sur FreeBSD
+TAG=dev make build
 
-```sh
-# Compiler le noyau (cible x86_64-unknown-none)
-make build
+# Package ISO/IMG/checksum en tar.gz
+TAG=dev make package
 
-# Lancer dans QEMU (nécessite bootimage + qemu-system-x86_64)
-make run
-
-# Tests unitaires de la couche compat (cible hôte)
+# Vérifie la présence des composants UI
 make test
+
+# Vérifie les checksums des artefacts générés
+make smoke
 ```
 
----
+## Lancer en VM
 
-## Feuille de route
+Exemple QEMU (depuis un artefact généré) :
 
-- [x] Boot + GDT + IDT + PIC
-- [x] Allocateur de frames physiques
-- [x] Gestion des tables de pages virtuelles
-- [x] Tas noyau
-- [x] Ordonnanceur préemptif (round-robin, timer IRQ)
-- [x] IPC par messages (ports Mach)
-- [x] Driver VGA et UART
-- [x] Parseur Mach-O 64 bits
-- [x] Table des syscalls Darwin/XNU
-- [ ] Changement de contexte assembleur complet (registres flottants + FPU)
-- [ ] Support multi-cœur (APIC / SMP)
-- [ ] VFS minimal (ramfs)
-- [ ] Espace utilisateur + appels système natifs
-- [ ] Chargeur d'exécutables Mach-O (mapping segments, dyld)
-- [ ] Traduction complète des syscalls Darwin (read/write/mmap/…)
-- [ ] Pilotes open-source : virtio-net, virtio-blk, e1000
+```sh
+qemu-system-x86_64 \
+  -m 4096 \
+  -drive if=virtio,file=artifacts/pamplemouche-os-dev.img,format=raw \
+  -serial mon:stdio
+```
 
----
+## CI/CD
 
-## Licence
+Le workflow `.github/workflows/build-iso.yml` exécute :
 
-Ce projet est développé entièrement à partir de zéro en utilisant exclusivement
-des frameworks et pilotes open-source. Aucun code propriétaire Apple/macOS n'est
-inclus ou dérivé. La couche de compatibilité Darwin se base sur la documentation
-publique des ABI et sur les sources XNU publiées par Apple sous licence APSL-2.0.
+1. `validate`: validation structure/scripts,
+2. `build-image`: build FreeBSD dans VM,
+3. `package`: création bundle tar.gz,
+4. `release`: publication automatique sur tag `v*`.
+
+## Conformité légale
+
+Le look & feel est inspiré de macOS uniquement par assemblage de composants libres (Openbox, Tint2, Plank, Rofi, thèmes open source). Aucun binaire, framework, API privée ou ressource graphique propriétaire Apple n'est embarqué.
