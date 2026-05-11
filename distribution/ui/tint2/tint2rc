@@ -1,5 +1,5 @@
-# Generated at session startup by pamplemouche-session-init.
-# This fallback keeps a readable desktop even before per-user configuration exists.
+# Static fallback theme used until pamplemouche-session-init renders
+# the per-user Ventura-like tint2 profile at login.
 panel_items = E:TSC
 panel_position = top center horizontal
 panel_size = 100% 34

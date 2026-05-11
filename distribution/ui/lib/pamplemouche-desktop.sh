@@ -2,6 +2,9 @@
 set -eu
 
 PAMPLEMOUCHE_DEFAULTS_FILE="${PAMPLEMOUCHE_DEFAULTS_FILE:-/usr/local/etc/pamplemouche-desktop/defaults.conf}"
+PAMPLEMOUCHE_PANEL_OPACITY_FROSTED="78"
+PAMPLEMOUCHE_PANEL_OPACITY_SOLID="94"
+PAMPLEMOUCHE_SELECTION_TEXT_HEX="#101214"
 
 pamplemouche_settings_dir() {
   printf '%s\n' "${XDG_CONFIG_HOME:-$HOME/.config}/pamplemouche-desktop"
@@ -145,8 +148,8 @@ pamplemouche_apply_palette() {
   esac
 
   case "$DESKTOP_PANEL_MODE" in
-    solid) DESKTOP_PANEL_OPACITY="94" ;;
-    *) DESKTOP_PANEL_OPACITY="78" ;;
+    solid) DESKTOP_PANEL_OPACITY="$PAMPLEMOUCHE_PANEL_OPACITY_SOLID" ;;
+    *) DESKTOP_PANEL_OPACITY="$PAMPLEMOUCHE_PANEL_OPACITY_FROSTED" ;;
   esac
 }
 
@@ -273,7 +276,7 @@ element {
 }
 element selected {
   background-color: @accent;
-  text-color: #101214;
+  text-color: $PAMPLEMOUCHE_SELECTION_TEXT_HEX;
 }
 element-text {
   vertical-align: 0.5;
@@ -314,10 +317,16 @@ pamplemouche_panel_mode_label() {
 
 pamplemouche_stop_pidfile() {
   pid_file="$1"
+  expected_process="$2"
   [ -f "$pid_file" ] || return 0
   pid=$(cat "$pid_file")
   case "$pid" in
     ''|*[!0-9]*) return 0 ;;
+  esac
+  process_command=$(ps -p "$pid" -o command= 2>/dev/null | sed -n '1p')
+  case "$process_command" in
+    *"/$expected_process"|"$expected_process"|"$expected_process "*) ;;
+    *) return 0 ;;
   esac
   kill "$pid" >/dev/null 2>&1 || true
   rm -f "$pid_file"
@@ -326,7 +335,7 @@ pamplemouche_stop_pidfile() {
 pamplemouche_reload_session() {
   runtime_dir="$(pamplemouche_runtime_dir)"
   mkdir -p "$runtime_dir"
-  pamplemouche_stop_pidfile "$runtime_dir/tint2.pid"
-  pamplemouche_stop_pidfile "$runtime_dir/plank.pid"
+  pamplemouche_stop_pidfile "$runtime_dir/tint2.pid" "tint2"
+  pamplemouche_stop_pidfile "$runtime_dir/plank.pid" "plank"
   /usr/local/bin/pamplemouche-session-init >/dev/null 2>&1 &
 }
