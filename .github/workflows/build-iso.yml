@@ -43,7 +43,27 @@ jobs:
           run: |
             set -eu
             pkg update
-            pkg install -y freebsd-src xorriso e2fsprogs
+            pkg install -y xorriso e2fsprogs
+            if ! pkg install -y freebsd-src; then
+              echo "freebsd-src package unavailable, bootstrapping /usr/src from git."
+              pkg install -y git ca_root_nss || {
+                echo "Failed to install git/ca_root_nss required for src bootstrap." >&2
+                exit 1
+              }
+              rm -rf /usr/src
+              cloned_src=0
+              for branch in releng/14.3 release/14.3.0 stable/14; do
+                if git clone --depth 1 --single-branch --branch "$branch" https://git.FreeBSD.org/src.git /usr/src; then
+                  cloned_src=1
+                  break
+                fi
+                rm -rf /usr/src
+              done
+              [ "$cloned_src" -eq 1 ] || {
+                echo "Unable to bootstrap /usr/src from known FreeBSD branches." >&2
+                exit 1
+              }
+            fi
             [ -d /usr/src/release ] || {
               echo "Directory /usr/src/release not found. Ensure freebsd-src installed correctly." >&2
               exit 1
