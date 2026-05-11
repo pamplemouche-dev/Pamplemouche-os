@@ -9,6 +9,8 @@ RELEASE_DIR="$ARTIFACT_DIR/release"
 
 . "$REPO_ROOT/scripts/common.sh"
 
+SAFE_TAG="$(artifact_tag "$TAG")"
+
 mkdir -p "$ROOTFS_DIR" "$RELEASE_DIR"
 
 if [ "$(uname -s)" != "FreeBSD" ]; then
@@ -46,10 +48,10 @@ cp "$REPO_ROOT/distribution/config/usr/local/etc/lightdm.conf" "$ROOTFS_DIR/usr/
 TARGET_ROOT="$ROOTFS_DIR" REPO_ROOT="$REPO_ROOT" "$REPO_ROOT/scripts/configure-ui.sh"
 
 echo "==> Building image files"
-ROOTFS_IMAGE="$RELEASE_DIR/${ARTIFACT_PREFIX}-rootfs-${TAG}.ufs"
-IMG="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${TAG}.img"
-ISO="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${TAG}.iso"
-SUM="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${TAG}.sha256"
+ROOTFS_IMAGE="$RELEASE_DIR/${ARTIFACT_PREFIX}-rootfs-${SAFE_TAG}.ufs"
+IMG="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${SAFE_TAG}.img"
+ISO="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${SAFE_TAG}.iso"
+SUM="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${SAFE_TAG}.sha256"
 rm -f "$ROOTFS_IMAGE" "$IMG" "$ISO" "$SUM"
 
 makefs -t ffs -s 2g "$ROOTFS_IMAGE" "$ROOTFS_DIR"
