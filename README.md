@@ -67,8 +67,7 @@ Le workflow `.github/workflows/build-iso.yml` exécute :
 
 1. `validate`: validation structure/scripts,
 2. `build-image`: build FreeBSD dans VM,
-3. `package`: création bundle tar.gz,
-4. `release`: publication automatique sur tag `v*`.
+3. `release`: publication automatique de l’ISO sur tag `v*`.
 
 ## Conformité légale
 
