@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+  <keyboard>
+    <keybind key="W-space">
+      <action name="Execute">
+        <command>/usr/local/bin/pamplemouche-launcher</command>
+      </action>
+    </keybind>
+    <keybind key="W-comma">
+      <action name="Execute">
+        <command>/usr/local/bin/pamplemouche-control-center</command>
+      </action>
+    </keybind>
+    <keybind key="W-Return">
+      <action name="Execute">
+        <command>alacritty</command>
+      </action>
+    </keybind>
+  </keyboard>
+
+  <mouse>
+    <dragThreshold>8</dragThreshold>
+    <doubleClickTime>500</doubleClickTime>
+    <screenEdgeWarpTime>0</screenEdgeWarpTime>
+    <screenEdgeWarpMouse>false</screenEdgeWarpMouse>
+  </mouse>
+
+  <desktops>
+    <number>1</number>
+    <firstdesk>1</firstdesk>
+    <names>
+      <name>Pamplemouche</name>
+    </names>
+  </desktops>
+
+  <resize>
+    <drawContents>true</drawContents>
+    <popupShow>Nonpixel</popupShow>
+  </resize>
+
+  <margins>
+    <top>36</top>
+    <bottom>64</bottom>
+    <left>10</left>
+    <right>10</right>
+  </margins>
+
+  <dock>
+    <position>Bottom</position>
+    <stacking>Normal</stacking>
+    <direction>Horizontal</direction>
+    <floatingX>0</floatingX>
+    <floatingY>0</floatingY>
+    <noStrut>false</noStrut>
+  </dock>
+
+  <menu>
+    <file>menu.xml</file>
+    <showIcons>false</showIcons>
+  </menu>
+</openbox_config>

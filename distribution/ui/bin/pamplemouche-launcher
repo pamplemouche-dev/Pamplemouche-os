@@ -1,0 +1,40 @@
+#!/bin/sh
+set -eu
+
+. /usr/local/libexec/pamplemouche-desktop.sh
+
+pamplemouche_load_settings
+pamplemouche_apply_palette
+THEME_FILE="$(pamplemouche_prepare_rofi_theme)"
+
+selection="$(
+  printf '%s\n' \
+    "Toutes les applications" \
+    "Terminal" \
+    "Fichiers" \
+    "Navigateur" \
+    "Centre de configuration" \
+    "Fermer la session" |
+    rofi -dmenu -i -p "Pamplemouche" -theme "$THEME_FILE"
+)" || exit 0
+
+case "$selection" in
+  "Toutes les applications")
+    exec rofi -show drun -theme "$THEME_FILE"
+    ;;
+  "Terminal")
+    exec alacritty
+    ;;
+  "Fichiers")
+    exec thunar
+    ;;
+  "Navigateur")
+    exec firefox
+    ;;
+  "Centre de configuration")
+    exec /usr/local/bin/pamplemouche-control-center
+    ;;
+  "Fermer la session")
+    exec openbox --exit
+    ;;
+esac

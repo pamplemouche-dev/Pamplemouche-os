@@ -1,0 +1,26 @@
+#!/bin/sh
+set -eu
+
+. /usr/local/libexec/pamplemouche-desktop.sh
+
+RUNTIME_DIR=$(pamplemouche_runtime_dir)
+
+mkdir -p "$RUNTIME_DIR"
+pamplemouche_load_settings
+pamplemouche_apply_palette
+pamplemouche_render_tint2 > "$RUNTIME_DIR/tint2rc"
+pamplemouche_render_rofi_theme > "$RUNTIME_DIR/rofi.rasi"
+
+if command -v xsetroot >/dev/null 2>&1; then
+  xsetroot -solid "$DESKTOP_BACKGROUND_HEX"
+fi
+
+if command -v plank >/dev/null 2>&1; then
+  plank >/dev/null 2>&1 &
+  printf '%s\n' "$!" > "$RUNTIME_DIR/plank.pid"
+fi
+
+if command -v tint2 >/dev/null 2>&1; then
+  tint2 -c "$RUNTIME_DIR/tint2rc" >/dev/null 2>&1 &
+  printf '%s\n' "$!" > "$RUNTIME_DIR/tint2.pid"
+fi

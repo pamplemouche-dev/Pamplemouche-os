@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Pamplemouche Control Center
+GenericName=Desktop Settings
+Comment=Configure the macOS Ventura-like desktop profile
+Exec=/usr/local/bin/pamplemouche-control-center
+Terminal=false
+Categories=Settings;DesktopSettings;
+StartupNotify=false
