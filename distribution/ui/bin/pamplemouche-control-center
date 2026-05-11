@@ -36,13 +36,13 @@ case "$selection" in
     ;;
   "Accent : "*)
     choice="$(
-      printf '%s\n' "Bleu" "Violet" "Menthe" "Graphite" |
+      printf '%s\n' "Bleu" "Violet" "Mint" "Graphite" |
         rofi -dmenu -i -p "Accent" -theme "$THEME_FILE"
     )" || exit 0
     case "$choice" in
       "Bleu") DESKTOP_ACCENT="blue" ;;
       "Violet") DESKTOP_ACCENT="violet" ;;
-      "Menthe") DESKTOP_ACCENT="mint" ;;
+      "Mint") DESKTOP_ACCENT="mint" ;;
       "Graphite") DESKTOP_ACCENT="graphite" ;;
       *) exit 0 ;;
     esac

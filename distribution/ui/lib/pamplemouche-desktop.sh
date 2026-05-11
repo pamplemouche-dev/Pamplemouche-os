@@ -295,7 +295,7 @@ pamplemouche_preset_label() {
 pamplemouche_accent_label() {
   case "$1" in
     violet) printf '%s\n' "Violet" ;;
-    mint) printf '%s\n' "Menthe" ;;
+    mint) printf '%s\n' "Mint" ;;
     graphite) printf '%s\n' "Graphite" ;;
     *) printf '%s\n' "Bleu" ;;
   esac
