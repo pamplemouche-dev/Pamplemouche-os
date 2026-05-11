@@ -43,7 +43,11 @@ jobs:
           run: |
             set -eu
             pkg update
-            pkg install -y xorriso e2fsprogs
+            pkg install -y freebsd-src xorriso e2fsprogs
+            [ -d /usr/src/release ] || {
+              echo "Missing /usr/src/release after installing freebsd-src." >&2
+              exit 1
+            }
             cd "${{ github.workspace }}"
             TAG="${GITHUB_REF_NAME:-ci}" make build
 
