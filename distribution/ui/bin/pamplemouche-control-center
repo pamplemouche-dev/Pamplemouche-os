@@ -1,0 +1,83 @@
+#!/bin/sh
+set -eu
+
+. /usr/local/libexec/pamplemouche-desktop.sh
+
+pamplemouche_load_settings
+pamplemouche_apply_palette
+THEME_FILE="$(pamplemouche_prepare_rofi_theme)"
+
+selection="$(
+  printf '%s\n' \
+    "Profil : $(pamplemouche_preset_label "$DESKTOP_PRESET")" \
+    "Accent : $(pamplemouche_accent_label "$DESKTOP_ACCENT")" \
+    "Densité : $(pamplemouche_density_label "$DESKTOP_DENSITY")" \
+    "Barre : $(pamplemouche_panel_mode_label "$DESKTOP_PANEL_MODE")" \
+    "Recharger le bureau" |
+    rofi -dmenu -i -p "Configuration" -theme "$THEME_FILE"
+)" || exit 0
+
+case "$selection" in
+  "Profil : "*)
+    choice="$(
+      printf '%s\n' \
+        "Ventura Night" \
+        "Ventura Light" \
+        "Ventura Sunset" |
+        rofi -dmenu -i -p "Profil" -theme "$THEME_FILE"
+    )" || exit 0
+    case "$choice" in
+      "Ventura Night") DESKTOP_PRESET="ventura-night" ;;
+      "Ventura Light") DESKTOP_PRESET="ventura-light" ;;
+      "Ventura Sunset") DESKTOP_PRESET="ventura-sunset" ;;
+      *) exit 0 ;;
+    esac
+    pamplemouche_write_settings
+    ;;
+  "Accent : "*)
+    choice="$(
+      printf '%s\n' "Bleu" "Violet" "Menthe" "Graphite" |
+        rofi -dmenu -i -p "Accent" -theme "$THEME_FILE"
+    )" || exit 0
+    case "$choice" in
+      "Bleu") DESKTOP_ACCENT="blue" ;;
+      "Violet") DESKTOP_ACCENT="violet" ;;
+      "Menthe") DESKTOP_ACCENT="mint" ;;
+      "Graphite") DESKTOP_ACCENT="graphite" ;;
+      *) exit 0 ;;
+    esac
+    pamplemouche_write_settings
+    ;;
+  "Densité : "*)
+    choice="$(
+      printf '%s\n' "Confort" "Compact" |
+        rofi -dmenu -i -p "Densité" -theme "$THEME_FILE"
+    )" || exit 0
+    case "$choice" in
+      "Confort") DESKTOP_DENSITY="comfortable" ;;
+      "Compact") DESKTOP_DENSITY="compact" ;;
+      *) exit 0 ;;
+    esac
+    pamplemouche_write_settings
+    ;;
+  "Barre : "*)
+    choice="$(
+      printf '%s\n' "Effet givré" "Opaque" |
+        rofi -dmenu -i -p "Barre" -theme "$THEME_FILE"
+    )" || exit 0
+    case "$choice" in
+      "Effet givré") DESKTOP_PANEL_MODE="frosted" ;;
+      "Opaque") DESKTOP_PANEL_MODE="solid" ;;
+      *) exit 0 ;;
+    esac
+    pamplemouche_write_settings
+    ;;
+  "Recharger le bureau")
+    :
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+
+pamplemouche_reload_session

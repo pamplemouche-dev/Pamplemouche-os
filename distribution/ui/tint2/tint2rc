@@ -1,5 +1,65 @@
-# macOS-like top bar setup
+# Generated at session startup by pamplemouche-session-init.
+# This fallback keeps a readable desktop even before per-user configuration exists.
+panel_items = E:TSC
 panel_position = top center horizontal
-panel_size = 100% 30
+panel_size = 100% 34
+panel_margin = 0 0
+panel_padding = 10 6 10
 panel_background_id = 1
-background_color = #1f1f24 100
+wm_menu = 1
+
+rounded = 12
+border_width = 0
+background_color = #161821 84
+border_color = #161821 0
+
+rounded = 10
+border_width = 0
+background_color = #ffffff 10
+border_color = #7aa2f7 35
+
+rounded = 10
+border_width = 0
+background_color = #7aa2f7 32
+border_color = #7aa2f7 55
+
+font_color = #f4f7fb 100
+
+execp = new
+execp_command = printf 'Pamplemouche'
+execp_interval = 0
+execp_has_icon = 0
+execp_cache_icon = 0
+execp_continuous = 0
+execp_markup = 0
+execp_font = Sans 10
+execp_font_color = #f4f7fb 100
+execp_background_id = 0
+execp_padding = 12 4
+execp_lclick_command = /usr/local/bin/pamplemouche-launcher
+
+taskbar_mode = multi_desktop
+taskbar_padding = 4 0 4
+taskbar_background_id = 0
+taskbar_active_background_id = 0
+
+task_icon = 1
+task_text = 1
+task_centered = 1
+task_maximum_size = 180 24
+task_padding = 12 4 12
+task_background_id = 2
+task_active_background_id = 3
+task_font_color = #c7d0dd 100
+task_active_font_color = #f4f7fb 100
+task_icon_asb = 100 0 0
+
+systray_padding = 8 4 8
+systray_background_id = 0
+
+time1_format = %a %d %b   %H:%M
+time1_font = Sans 10
+time1_background_id = 0
+time1_font_color = #f4f7fb 100
+clock_padding = 12 4
+clock_tooltip = %A %d %B %Y

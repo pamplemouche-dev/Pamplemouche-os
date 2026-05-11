@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Pamplemouche Launcher
+GenericName=Application Launcher
+Comment=Open the mac-like application launcher
+Exec=/usr/local/bin/pamplemouche-launcher
+Terminal=false
+Categories=Utility;
+StartupNotify=false

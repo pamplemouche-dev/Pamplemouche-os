@@ -13,7 +13,7 @@ Pamplemouche-OS est désormais une distribution personnalisée basée sur FreeBS
 - `/freebsd/release`: paramètres de build FreeBSD release.
 - `/distribution/packages`: manifeste des paquets installés.
 - `/distribution/config`: configuration système (rc, loader, sysctl, lightdm).
-- `/distribution/ui`: profil UI (Openbox + Tint2 + Plank + Rofi).
+- `/distribution/ui`: profil UI (Openbox + Tint2 + Plank + Rofi + centre de configuration).
 - `/scripts`: build image, post-install UI, packaging, validation.
 
 ## Prérequis
@@ -73,3 +73,10 @@ Le workflow `.github/workflows/build-iso.yml` exécute :
 ## Conformité légale
 
 Le look & feel est inspiré de macOS uniquement par assemblage de composants libres (Openbox, Tint2, Plank, Rofi, thèmes open source). Aucun binaire, framework, API privée ou ressource graphique propriétaire Apple n'est embarqué.
+
+## UX desktop
+
+- `Super+Espace`: ouvre le lanceur d'applications.
+- `Super+,`: ouvre le centre de configuration.
+- `Super+Entrée`: ouvre le terminal.
+- Les préférences utilisateur sont stockées dans `~/.config/pamplemouche-desktop/settings.conf`.

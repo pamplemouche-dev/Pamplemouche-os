@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_menu xmlns="http://openbox.org/3.4/menu">
+  <menu id="root-menu" label="Pamplemouche">
+    <item label="Lanceur d'applications">
+      <action name="Execute">
+        <command>/usr/local/bin/pamplemouche-launcher</command>
+      </action>
+    </item>
+    <item label="Centre de configuration">
+      <action name="Execute">
+        <command>/usr/local/bin/pamplemouche-control-center</command>
+      </action>
+    </item>
+    <separator />
+    <item label="Terminal">
+      <action name="Execute">
+        <command>alacritty</command>
+      </action>
+    </item>
+    <item label="Fichiers">
+      <action name="Execute">
+        <command>thunar</command>
+      </action>
+    </item>
+    <item label="Navigateur">
+      <action name="Execute">
+        <command>firefox</command>
+      </action>
+    </item>
+    <separator />
+    <item label="Fermer la session">
+      <action name="Exit" />
+    </item>
+  </menu>
+</openbox_menu>
