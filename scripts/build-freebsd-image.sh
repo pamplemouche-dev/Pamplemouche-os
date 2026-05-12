@@ -41,6 +41,16 @@ esac
 arch="$(uname -m)"
 dist_base_url="https://download.freebsd.org/releases/$arch/$release_tag"
 
+case "$arch" in
+  amd64|i386)
+    bios_boot_arch="i386"
+    ;;
+  *)
+    echo "Unsupported architecture for BIOS bootable ISO generation: $arch" >&2
+    exit 1
+    ;;
+esac
+
 fetch_distset() {
   set_name="$1"
   local_set="$DISTSETS_DIR/$set_name"
@@ -95,14 +105,21 @@ ISO="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${SAFE_TAG}.iso"
 SUM="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${SAFE_TAG}.sha256"
 rm -f "$ROOTFS_IMAGE" "$IMG" "$ISO" "$SUM"
 
+for boot_file in pmbr gptboot cdboot; do
+  if [ ! -f "$ROOTFS_DIR/boot/$boot_file" ]; then
+    echo "Missing required boot loader file in rootfs: /boot/$boot_file" >&2
+    exit 1
+  fi
+done
+
 makefs -t ffs -s 2g "$ROOTFS_IMAGE" "$ROOTFS_DIR"
 mkimg -s gpt \
-  -b /boot/pmbr \
+  -b "$ROOTFS_DIR/boot/pmbr" \
   -p freebsd-boot:="$ROOTFS_DIR/boot/gptboot" \
   -p freebsd-ufs:="$ROOTFS_IMAGE" \
   -o "$IMG"
 makefs -t cd9660 \
-  -o "rockridge,bootimage=i386;$ROOTFS_DIR/boot/cdboot,no-emul-boot" \
+  -o "rockridge,bootimage=$bios_boot_arch;$ROOTFS_DIR/boot/cdboot,no-emul-boot" \
   "$ISO" "$ROOTFS_DIR"
 
 echo "==> Writing checksums"
