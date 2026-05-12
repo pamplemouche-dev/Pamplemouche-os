@@ -116,7 +116,10 @@ for boot_file in pmbr gptboot cdboot; do
   fi
 done
 
-makefs -t ffs -s 2g "$ROOTFS_IMAGE" "$ROOTFS_DIR"
+rootfs_kb="$(du -sk "$ROOTFS_DIR" | awk '{print $1}')"
+rootfs_size="$(awk "BEGIN { mb = int($rootfs_kb * 1024 * 1.2 / 1048576) + 1; print mb \"m\" }")"
+echo "==> rootfs disk usage: ${rootfs_kb} KiB; allocating ${rootfs_size} for UFS image"
+makefs -t ffs -s "$rootfs_size" "$ROOTFS_IMAGE" "$ROOTFS_DIR"
 mkimg -s gpt \
   -b "$ROOTFS_DIR/boot/pmbr" \
   -p freebsd-boot:="$ROOTFS_DIR/boot/gptboot" \
