@@ -6,12 +6,15 @@ REPO_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 ARTIFACT_DIR="${ARTIFACT_DIR:-$REPO_ROOT/artifacts}"
 ROOTFS_DIR="$ARTIFACT_DIR/rootfs"
 RELEASE_DIR="$ARTIFACT_DIR/release"
+DISTSETS_DIR="$RELEASE_DIR/distsets"
 
 . "$REPO_ROOT/scripts/common.sh"
 
 SAFE_TAG="$(artifact_tag "$TAG")"
 
-mkdir -p "$ROOTFS_DIR" "$RELEASE_DIR"
+mkdir -p "$RELEASE_DIR" "$DISTSETS_DIR"
+rm -rf "$ROOTFS_DIR"
+mkdir -p "$ROOTFS_DIR"
 
 if [ "$(uname -s)" != "FreeBSD" ]; then
   echo "FreeBSD host required to build bootable images." >&2
@@ -25,17 +28,45 @@ if [ ! -d /usr/src/release ]; then
   exit 1
 fi
 
-echo "==> Installing package set"
-while IFS= read -r pkg || [ -n "$pkg" ]; do
-  [ -z "$pkg" ] && continue
-  if pkg info -e "$pkg"; then
-    continue
+release_tag="$(freebsd-version -k 2>/dev/null || uname -r)"
+release_tag="${release_tag%%-p*}"
+
+case "$release_tag" in
+  *-RELEASE) ;;
+  *)
+    release_tag="$(printf '%s' "$release_tag" | sed 's/-.*//')-RELEASE"
+    ;;
+esac
+
+arch="$(uname -m)"
+dist_base_url="https://download.freebsd.org/releases/$arch/$release_tag"
+
+fetch_distset() {
+  set_name="$1"
+  local_set="$DISTSETS_DIR/$set_name"
+
+  if [ -f "$local_set" ] && [ -s "$local_set" ]; then
+    return 0
   fi
-  pkg install -y "$pkg" || {
-    echo "Failed to install package: $pkg" >&2
+
+  if [ -f "/usr/freebsd-dist/$set_name" ] && [ -s "/usr/freebsd-dist/$set_name" ]; then
+    cp "/usr/freebsd-dist/$set_name" "$local_set"
+    return 0
+  fi
+
+  echo "==> Downloading missing $set_name from $dist_base_url"
+  fetch -o "$local_set" "$dist_base_url/$set_name" || {
+    echo "Unable to retrieve $set_name from local dist sets or FreeBSD mirrors." >&2
     exit 1
   }
-done < "$REPO_ROOT/distribution/packages/base.txt"
+}
+
+fetch_distset base.txz
+fetch_distset kernel.txz
+
+echo "==> Extracting FreeBSD base system into rootfs"
+tar -xpf "$DISTSETS_DIR/base.txz" -C "$ROOTFS_DIR"
+tar -xpf "$DISTSETS_DIR/kernel.txz" -C "$ROOTFS_DIR"
 
 echo "==> Staging distribution rootfs"
 install -d "$ROOTFS_DIR/etc" "$ROOTFS_DIR/boot" "$ROOTFS_DIR/usr/local/etc"
@@ -47,6 +78,16 @@ cp "$REPO_ROOT/distribution/config/usr/local/etc/lightdm.conf" "$ROOTFS_DIR/usr/
 
 TARGET_ROOT="$ROOTFS_DIR" REPO_ROOT="$REPO_ROOT" "$REPO_ROOT/scripts/configure-ui.sh"
 
+echo "==> Installing package set into rootfs"
+ASSUME_ALWAYS_YES=yes pkg -r "$ROOTFS_DIR" bootstrap -f
+while IFS= read -r pkg_name || [ -n "$pkg_name" ]; do
+  [ -z "$pkg_name" ] && continue
+  pkg -r "$ROOTFS_DIR" install -y "$pkg_name" || {
+    echo "Failed to install package into rootfs: $pkg_name" >&2
+    exit 1
+  }
+done < "$REPO_ROOT/distribution/packages/base.txt"
+
 echo "==> Building image files"
 ROOTFS_IMAGE="$RELEASE_DIR/${ARTIFACT_PREFIX}-rootfs-${SAFE_TAG}.ufs"
 IMG="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${SAFE_TAG}.img"
@@ -55,8 +96,14 @@ SUM="$ARTIFACT_DIR/${ARTIFACT_PREFIX}-${SAFE_TAG}.sha256"
 rm -f "$ROOTFS_IMAGE" "$IMG" "$ISO" "$SUM"
 
 makefs -t ffs -s 2g "$ROOTFS_IMAGE" "$ROOTFS_DIR"
-mkimg -s gpt -p freebsd-ufs:="$ROOTFS_IMAGE" -o "$IMG"
-makefs -t cd9660 -o rockridge "$ISO" "$ROOTFS_DIR"
+mkimg -s gpt \
+  -b /boot/pmbr \
+  -p freebsd-boot:="$ROOTFS_DIR/boot/gptboot" \
+  -p freebsd-ufs:="$ROOTFS_IMAGE" \
+  -o "$IMG"
+makefs -t cd9660 \
+  -o "rockridge,bootimage=i386;$ROOTFS_DIR/boot/cdboot,no-emul-boot" \
+  "$ISO" "$ROOTFS_DIR"
 
 echo "==> Writing checksums"
 TAB="$(printf '\t')"

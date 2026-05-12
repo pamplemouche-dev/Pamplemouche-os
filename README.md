@@ -30,6 +30,7 @@ Pamplemouche-OS est désormais une distribution personnalisée basée sur FreeBS
 - FreeBSD 14.1+
 - Arbre des sources installé (`/usr/src/release`)
 - Outils: `mkimg`, `makefs`, `pkg`
+- Accès réseau (si `/usr/freebsd-dist/base.txz` et `kernel.txz` sont absents, ils sont téléchargés automatiquement)
 
 ## Commandes
 
@@ -37,7 +38,7 @@ Pamplemouche-OS est désormais une distribution personnalisée basée sur FreeBS
 # Vérifie la structure et les scripts
 make validate
 
-# Construit les images bootables sur FreeBSD
+# Construit une image disque GPT bootable + une ISO bootable avec base FreeBSD embarquée
 TAG=dev make build
 
 # Package ISO/IMG/checksum en tar.gz
