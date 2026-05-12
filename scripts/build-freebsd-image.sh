@@ -56,21 +56,21 @@ esac
 }
 
 fetch_distset() {
-  set_name="$1"
-  local_set="$DISTSETS_DIR/$set_name"
+  distset_name="$1"
+  local_set="$DISTSETS_DIR/$distset_name"
 
   if [ -f "$local_set" ] && [ -s "$local_set" ]; then
     return 0
   fi
 
-  if [ -f "/usr/freebsd-dist/$set_name" ] && [ -s "/usr/freebsd-dist/$set_name" ]; then
-    cp "/usr/freebsd-dist/$set_name" "$local_set"
+  if [ -f "/usr/freebsd-dist/$distset_name" ] && [ -s "/usr/freebsd-dist/$distset_name" ]; then
+    cp "/usr/freebsd-dist/$distset_name" "$local_set"
     return 0
   fi
 
-  echo "==> Downloading missing $set_name from $dist_base_url"
-  fetch -o "$local_set" "$dist_base_url/$set_name" || {
-    echo "Unable to retrieve $set_name from local dist sets or FreeBSD mirrors." >&2
+  echo "==> Downloading missing $distset_name from $dist_base_url"
+  fetch -o "$local_set" "$dist_base_url/$distset_name" || {
+    echo "Unable to retrieve $distset_name from local dist sets or FreeBSD mirrors." >&2
     exit 1
   }
 }
@@ -111,7 +111,7 @@ rm -f "$ROOTFS_IMAGE" "$IMG" "$ISO" "$SUM"
 
 for boot_file in pmbr gptboot cdboot; do
   if [ ! -f "$ROOTFS_DIR/boot/$boot_file" ]; then
-    echo "Missing required boot loader file in rootfs: /boot/$boot_file" >&2
+    echo "Missing required boot loader file in rootfs: $ROOTFS_DIR/boot/$boot_file" >&2
     exit 1
   fi
 done
