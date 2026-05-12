@@ -50,6 +50,10 @@ case "$arch" in
     exit 1
     ;;
 esac
+[ -n "$bios_boot_arch" ] || {
+  echo "Missing BIOS boot architecture mapping." >&2
+  exit 1
+}
 
 fetch_distset() {
   set_name="$1"
@@ -92,7 +96,7 @@ echo "==> Installing package set into rootfs"
 ASSUME_ALWAYS_YES=yes pkg -r "$ROOTFS_DIR" bootstrap -f
 while IFS= read -r pkg_name || [ -n "$pkg_name" ]; do
   [ -z "$pkg_name" ] && continue
-  pkg -r "$ROOTFS_DIR" install -y "$pkg_name" || {
+  ASSUME_ALWAYS_YES=yes pkg -r "$ROOTFS_DIR" install -y "$pkg_name" || {
     echo "Failed to install package into rootfs: $pkg_name" >&2
     exit 1
   }
